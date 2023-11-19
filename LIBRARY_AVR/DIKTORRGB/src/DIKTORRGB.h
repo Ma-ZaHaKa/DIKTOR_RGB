@@ -22,6 +22,7 @@ public:
 	//---SET (1)
 	void SetColor(int, int, int);
 	void SetColorByNum(int _color, bool stop_anim = false);
+	void SetColorByNumPWM(int _color, int _pwm);
 	void SetRandomColor();
 
 	//-----Full (2)
@@ -33,6 +34,15 @@ public:
 	void InitFadeAnimation(int _DelayAnim, int _DelayColor);
 	void OnFadeAnimation();
 	void StopFadeAnimation();
+
+	//-----Full Dual (3)
+	//-----Fade Dual (4)
+
+	//-----7Color Smooth (6)
+	//-----3Color Smooth (7)
+	void InitSmoothAnimation(bool all_colors_mode, int _DelayAnim, int _DelayColor, bool random_color = true);
+	void OnSmoothAnimation();
+	void StopSmoothAnimation();
 
 	//----Random Color (8)
 	void InitRCAnimation(int);
@@ -53,7 +63,7 @@ private:
 	bool IsDoubleChannel = false;
 	bool IsUseCRT = true;
 	unsigned long last_millis = 0;
-	int anim_num = 0; // disable, 1 setted color, 2 full, 2 fade, 3 full offset dual, 4 fade offset dual, 5 6color smooth, 7 3colorsmooth, 8 random color // max 8
+	int anim_num = 0; // disable, 1 setted color, 2 full, 3 fade, 4 full offset dual, 5 fade offset dual,  66color smooth,  73colorsmooth,  8 random color // max 8
 	int anim_mode = 0;  // 0 start(red), 1 yellow loop, 2 green loop, 3 blue loop, 4 blue loop, 5 purple loop, 6 red loop
 
 
@@ -64,10 +74,15 @@ private:
 	//byte A1mode = 0;
 	int colorStep = 0;
 
+
 	//---MODE 2 add vars // full
 	bool startM2 = false;
+	//---MODE 6-7
+	int last_color_M56 = 0; // last color
+	int color_counter_M56 = 0; // color counter
+	bool rand_colorM56 = false;
 	//---MODE 8 add vars random colors
-	byte last_color = 0; // disabled
+	byte last_colorM8 = 0; // disabled
 };
 
 byte getBrightCRT(byte val);

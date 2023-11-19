@@ -58,28 +58,42 @@ void DIKTORRGB::SetColor(int _RPwm, int _GPwm, int _BPwm)
 	if (anim_num != 1) { StopAnimation(); anim_num = 1; }
 	_SetColor(_RPwm, _GPwm, _BPwm);
 }
-void DIKTORRGB::SetColorByNum(int _color, bool stop_anim)
+void DIKTORRGB::SetColorByNum(int _color, bool stop_anim) // ?? stop anim
 {
 	if (stop_anim)
 	{
 		if (_color == 0) { SetColor(0, 0, 0); } // none
 		else if (_color == 1) { SetColor(MaxBrightness, 0, 0); } // red
-		else if (_color == 2) { SetColor(MaxBrightness, MaxBrightness, 0); } // yellow
-		else if (_color == 3) { SetColor(0, MaxBrightness, 0); } // green
-		else if (_color == 4) { SetColor(0, MaxBrightness, MaxBrightness); } // blue (light)
-		else if (_color == 5) { SetColor(0, 0, MaxBrightness); } // blue (dark)
-		else if (_color == 6) { SetColor(MaxBrightness, MaxBrightness, MaxBrightness); } // white
+		else if (_color == 2) { SetColor(0, MaxBrightness, 0); } // green
+		else if (_color == 3) { SetColor(0, 0, MaxBrightness); } // blue (dark)
+		else if (_color == 4) { SetColor(MaxBrightness, MaxBrightness, 0); } // yellow RG
+		else if (_color == 5) { SetColor(0, MaxBrightness, MaxBrightness); } // blue (light) GB
+		else if (_color == 6) { SetColor(MaxBrightness, 0, MaxBrightness); } // purple RB
+		else if (_color == 7) { SetColor(MaxBrightness, MaxBrightness, MaxBrightness); } // white
 	}
 	else
 	{
 		if (_color == 0) { _SetColor(0, 0, 0); } // none
 		else if (_color == 1) { _SetColor(MaxBrightness, 0, 0); } // red
-		else if (_color == 2) { _SetColor(MaxBrightness, MaxBrightness, 0); } // yellow
-		else if (_color == 3) { _SetColor(0, MaxBrightness, 0); } // green
-		else if (_color == 4) { _SetColor(0, MaxBrightness, MaxBrightness); } // blue (light)
-		else if (_color == 5) { _SetColor(0, 0, MaxBrightness); } // blue (dark)
-		else if (_color == 6) { _SetColor(MaxBrightness, MaxBrightness, MaxBrightness); } // white
+		else if (_color == 2) { _SetColor(0, MaxBrightness, 0); } // green
+		else if (_color == 3) { _SetColor(0, 0, MaxBrightness); } // blue (dark)
+		else if (_color == 4) { _SetColor(MaxBrightness, MaxBrightness, 0); } // yellow RG
+		else if (_color == 5) { _SetColor(0, MaxBrightness, MaxBrightness); } // blue (light) GB
+		else if (_color == 6) { _SetColor(MaxBrightness, 0, MaxBrightness); } // purple RB
+		else if (_color == 7) { _SetColor(MaxBrightness, MaxBrightness, MaxBrightness); } // white
 	}
+}
+void DIKTORRGB::SetColorByNumPWM(int _color, int _pwm)
+{
+
+	if (_color == 0) { _SetColor(0, 0, 0); } // none
+	else if (_color == 1) { _SetColor(_pwm, 0, 0); } // red
+	else if (_color == 2) { _SetColor(0, _pwm, 0); } // green
+	else if (_color == 3) { _SetColor(0, 0, _pwm); } // blue (dark)
+	else if (_color == 4) { _SetColor(_pwm, _pwm, 0); } // yellow RG
+	else if (_color == 5) { _SetColor(0, _pwm, _pwm); } // blue (light) GB
+	else if (_color == 6) { _SetColor(_pwm, 0, _pwm); } // purple RB
+	else if (_color == 7) { _SetColor(_pwm, _pwm, _pwm); } // white
 }
 void DIKTORRGB::_SetColor(int _RPwm, int _GPwm, int _BPwm) // -1 не трогаем pwm
 {
@@ -112,7 +126,7 @@ void DIKTORRGB::_SetColor(int _RPwm, int _GPwm, int _BPwm) // -1 не трогаем pwm
 }
 void DIKTORRGB::SetRandomColor()
 {
-	int _clr = _RandVKL(1, 6, false); // color
+	int _clr = _RandVKL(1, 7, false); // color
 	SetColorByNum(_clr, true); // true reset anim
 }
 
@@ -122,22 +136,31 @@ void DIKTORRGB::SetRandomColor()
 
 void DIKTORRGB::OnAnimation()
 {
-	if (anim_num == 2) { OnFullAnimation(); }
-	else if (anim_num == 3) { OnFadeAnimation(); }
-	else if (anim_num == 8) { OnRCAnimation(); }
+	if (anim_num == 2) { OnFullAnimation(); } // full
+	else if (anim_num == 3) { OnFadeAnimation(); } // fade
+	// 4 full dual
+	// 5 fade dual
+	else if (anim_num == 6) { OnSmoothAnimation(); } // smooth
+	else if (anim_num == 7) { OnSmoothAnimation(); } // smooth
+	else if (anim_num == 8) { OnRCAnimation(); } // rc
 }
 void DIKTORRGB::StopAnimation()
 {
 	//if (anim_num == 2) { StopFullAnimation(); }
-	StopFullAnimation();
-	StopFadeAnimation();
-	StopRCAnimation();
+	StopFullAnimation(); // 2
+	StopFadeAnimation(); // 3
+	OnSmoothAnimation(); // 6 7
+	StopRCAnimation(); // 8
 	anim_num = 0;
 }
 void DIKTORRGB::SwitchAnimation(int _anim_num)
 {
 	if (_anim_num == 2) { InitFullAnimation(DelayAnim, DelayColor); }
 	else if (_anim_num == 3) { InitFadeAnimation(DelayAnim, DelayColor); }
+
+	else if (_anim_num == 6) { InitSmoothAnimation(true, DelayAnim, DelayColor); }
+	else if (_anim_num == 7) { InitSmoothAnimation(false, DelayAnim, DelayColor); }
+
 	else if (_anim_num == 8) { InitRCAnimation(DelayColor); }
 }
 
@@ -174,7 +197,7 @@ bool DIKTORRGB::IsAnimNumber(int _num)
 
 
 
-//--------------FULL---
+//--------------FULL---(2)
 void DIKTORRGB::InitFullAnimation(int _DelayAnim, int _DelayColor)
 {
 	StopAnimation();
@@ -329,7 +352,7 @@ void DIKTORRGB::StopFullAnimation()
 
 
 
-//-----FADE---
+//-----FADE---(3)
 void DIKTORRGB::InitFadeAnimation(int _DelayAnim, int _DelayColor)
 {
 	StopAnimation();
@@ -419,7 +442,60 @@ void DIKTORRGB::StopFadeAnimation()
 
 
 
-//-----RC---
+
+
+//-----Color_SMOOTH---(6-7)
+void DIKTORRGB::InitSmoothAnimation(bool all_colors_mode, int _DelayAnim, int _DelayColor, bool random_color)
+{
+	StopAnimation();
+	//last_millis = millis();
+	last_millis = 0;
+	DelayAnim = _DelayAnim;
+	DelayColor = _DelayColor;
+	CurrDelay = DelayColor; //!!
+	last_color_M56 = 0;
+	color_counter_M56 = 0;
+	anim_num = all_colors_mode ? 6 : 7; // 6 seven, 7 three
+	rand_colorM56 = random_color;
+}
+void DIKTORRGB::OnSmoothAnimation()
+{
+	unsigned long currentMillis = millis();
+	if (currentMillis - last_millis >= CurrDelay)
+	{
+		last_millis = currentMillis;
+
+		bool all_colors_mode = (anim_num == 6); // 6 seven, 7 three
+		int last_color_num_by_mode = all_colors_mode ? 7 : 3;
+		// rand_colorM56
+
+		int _clr = 0;
+		if (rand_colorM56) { while (true) { _clr = _RandVKL(1, last_color_num_by_mode, false); if (_clr != last_color_M56) { last_color_M56 = _clr; break; } } } // рандомный цвет
+		else { ++color_counter_M56; if (color_counter_M56 > last_color_num_by_mode) { color_counter_M56 = 1; } }
+
+		//++colorStep;
+		//SetColorByNumPWM(colorStep);
+		SetColorByNum(_clr);
+	}
+}
+void DIKTORRGB::StopSmoothAnimation()
+{
+	CurrDelay = 0;
+	last_millis = 0;
+	anim_mode = 0;
+	colorStep = 0;
+	anim_num = 0;
+	last_color_M56 = 0;
+	color_counter_M56 = 0;
+	rand_colorM56 = false;
+	DisableAll();
+}
+
+
+
+
+
+//-----RC---(8)
 void DIKTORRGB::InitRCAnimation(int _DelayColor)
 {
 	StopAnimation();
@@ -429,7 +505,7 @@ void DIKTORRGB::InitRCAnimation(int _DelayColor)
 	DelayColor = _DelayColor;
 	CurrDelay = DelayColor;
 	anim_num = 8;
-	last_color = 0;
+	last_colorM8 = 0;
 }
 
 
@@ -441,9 +517,9 @@ void DIKTORRGB::OnRCAnimation()
 	{
 		last_millis = currentMillis;
 		int _clr = 0;
-		while (true) { _clr = _RandVKL(1, 6, false); if (_clr != last_color) { break; } }
+		while (true) { _clr = _RandVKL(1, 7, false); if (_clr != last_colorM8) { break; } }
 		//Serial.println("OnRC!");
-		last_color = _clr;
+		last_colorM8 = _clr;
 		SetColorByNum(_clr);
 	}
 }
@@ -455,6 +531,6 @@ void DIKTORRGB::StopRCAnimation()
 	anim_mode = 0;
 	colorStep = 0;
 	anim_num = 0;
-	last_color = 0;
+	last_colorM8 = 0;
 	DisableAll();
 }
