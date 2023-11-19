@@ -81,6 +81,8 @@ private:
 	int last_color_M56 = 0; // last color
 	int color_counter_M56 = 0; // color counter
 	bool rand_colorM56 = false;
+	bool side_M56 = false; // false++  true--
+	bool ch_color_M56 = false;
 	//---MODE 8 add vars random colors
 	byte last_colorM8 = 0; // disabled
 };

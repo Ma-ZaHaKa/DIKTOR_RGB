@@ -61,11 +61,12 @@ void PrintDataJson(const String& message)
 void setup()
 {
   Serial.begin(9600);
+  rgb.SetCtrMode(true); //ctr гамма
   // pinout PWM OUTPUT auto in DIKTORLIB
   //rgb.SetRandomColor();
 
-  int L = 9;
-  int R = 20;
+  int L = 1;
+  int R = 10;
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
   analogWrite(9, map(L, 0, 100, 46, 255));
@@ -158,8 +159,12 @@ void loop()
 
             else if(anim_num == 4) {  } // full offset
             else if(anim_num == 5) {  } // fade offset
-            else if(anim_num == 6) {  } // 6 color smooth
-            else if(anim_num == 7) {  } // 3 color smooth
+
+            // {"mode":"set_anim", "anim_num":"7", "delayanim":"4", "delaycolor":"0"} 
+            // {"mode":"set_anim", "anim_num":"7", "delayanim":"10", "delaycolor":"1000"} 
+            // InitSmoothAnimation(bool all_colors_mode, int _DelayAnim, int _DelayColor, bool random_color) rc=false по кругу
+            else if(anim_num == 6) {  rgb.InitSmoothAnimation(true, delayanim, delaycolor, true); } // 6 color smooth
+            else if(anim_num == 7) { rgb.InitSmoothAnimation(false, delayanim, delaycolor, true); } // 3 color smooth
 
             else if(anim_num == 8) { rgb.InitRCAnimation(delaycolor);} // random color
           }
@@ -174,18 +179,16 @@ void loop()
           //else if (jsonDoc["mode"] == "hello") { PrintDataJson(PROJ_CODE); }
           else if (mode == "hello") { PrintDataJson(PROJ_CODE); }
           else if (mode == "reset") { resetFunc(); }
-          else { PrintErrorJson("~errmode"); }
+          else { PrintErrorJson("~errmode"); } // не найден нужный mode
+        } // contains mode
 
+        // parse but field mode not exists
+        else { PrintErrorJson("errmodefield"); }
+      } // !error
 
-
-        } // mode
-
-        else if (inputString == "hello") { PrintDataJson(PROJ_CODE); }
-        //else { PrintErrorJson("Error Deserealization"); Serial.println(error.c_str()); }
-        else { Serial.println(error.c_str()); }
-
-      } // json parse error
-
+      else if (inputString == "hello") { PrintDataJson(PROJ_CODE); }
+      //else { PrintErrorJson("Error Deserealization"); Serial.println(error.c_str()); }
+      else { Serial.println(error.c_str()); }
   } // !Serial
 
   {

@@ -452,9 +452,11 @@ void DIKTORRGB::InitSmoothAnimation(bool all_colors_mode, int _DelayAnim, int _D
 	last_millis = 0;
 	DelayAnim = _DelayAnim;
 	DelayColor = _DelayColor;
-	CurrDelay = DelayColor; //!!
+	CurrDelay = DelayAnim; //!! // _DelayColor
 	last_color_M56 = 0;
 	color_counter_M56 = 0;
+	ch_color_M56 = true; // по дефолту цвет 0 для генерации
+	side_M56 = false;
 	anim_num = all_colors_mode ? 6 : 7; // 6 seven, 7 three
 	rand_colorM56 = random_color;
 }
@@ -465,17 +467,36 @@ void DIKTORRGB::OnSmoothAnimation()
 	{
 		last_millis = currentMillis;
 
+		if (CurrDelay != DelayAnim) { CurrDelay = DelayAnim; }
 		bool all_colors_mode = (anim_num == 6); // 6 seven, 7 three
 		int last_color_num_by_mode = all_colors_mode ? 7 : 3;
 		// rand_colorM56
 
 		int _clr = 0;
-		if (rand_colorM56) { while (true) { _clr = _RandVKL(1, last_color_num_by_mode, false); if (_clr != last_color_M56) { last_color_M56 = _clr; break; } } } // рандомный цвет
-		else { ++color_counter_M56; if (color_counter_M56 > last_color_num_by_mode) { color_counter_M56 = 1; } }
+		if (ch_color_M56)
+		{
+			//IsUseCRT = !IsUseCRT; // crt test
+			//Serial.println(IsUseCRT);
+			if (rand_colorM56) { while (true) { _clr = _RandVKL(1, last_color_num_by_mode, false); if (_clr != last_color_M56) { last_color_M56 = _clr; break; } } } // рандомный цвет
+			else { ++color_counter_M56; if (color_counter_M56 > last_color_num_by_mode) { color_counter_M56 = 1; } _clr = color_counter_M56; last_color_M56 = _clr; }
+			ch_color_M56 = false;
+		}
+		else { _clr = last_color_M56; }
 
-		//++colorStep;
-		//SetColorByNumPWM(colorStep);
-		SetColorByNum(_clr);
+		/*int _clr = 0; // баг на каждом fps новый цвет, еффект прикольный
+		if (rand_colorM56) { while (true) { _clr = _RandVKL(1, last_color_num_by_mode, false); if (_clr != last_color_M56) { last_color_M56 = _clr; break; } } } // рандомный цвет
+		else { ++color_counter_M56; if (color_counter_M56 > last_color_num_by_mode) { color_counter_M56 = 1; } _clr = color_counter_M56; }*/
+
+		SetColorByNumPWM(_clr, colorStep);
+
+		if (side_M56) { --colorStep; }
+		else { ++colorStep; }
+
+		if (colorStep > 255) { colorStep = 255; side_M56 = !side_M56; CurrDelay = DelayColor; }
+		else if (colorStep < 0) { colorStep = 0; side_M56 = !side_M56; ch_color_M56 = true; }
+
+		//Serial.println(colorStep);
+		//SetColorByNum(_clr);
 	}
 }
 void DIKTORRGB::StopSmoothAnimation()
@@ -484,8 +505,10 @@ void DIKTORRGB::StopSmoothAnimation()
 	last_millis = 0;
 	anim_mode = 0;
 	colorStep = 0;
+	side_M56 = false;
 	anim_num = 0;
 	last_color_M56 = 0;
+	ch_color_M56 = false;
 	color_counter_M56 = 0;
 	rand_colorM56 = false;
 	DisableAll();
